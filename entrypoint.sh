@@ -5,6 +5,6 @@ set -e
 mkdir -p /data
 
 # Apply all pending migrations, creating the SQLite db from scratch if needed
-node_modules/.bin/prisma migrate deploy --schema /app/webapp/prisma/schema.prisma
+node node_modules/prisma/build/index.js migrate deploy --schema /app/webapp/prisma/schema.prisma
 
 exec node server.js

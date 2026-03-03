@@ -46,7 +46,6 @@ COPY --from=builder /build/public           /app/webapp/public
 COPY --from=builder /build/node_modules/.prisma  /app/webapp/node_modules/.prisma
 COPY --from=builder /build/node_modules/@prisma  /app/webapp/node_modules/@prisma
 COPY --from=builder /build/node_modules/prisma   /app/webapp/node_modules/prisma
-COPY --from=builder /build/node_modules/.bin/prisma /app/webapp/node_modules/.bin/prisma
 
 # Prisma schema + migrations so `prisma migrate deploy` can run at startup
 COPY webapp/prisma /app/webapp/prisma
