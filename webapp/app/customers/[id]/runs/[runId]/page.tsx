@@ -153,10 +153,13 @@ function DcBalanceChart({ dc }: { dc: DcBalance }) {
   const newNodes = dc.nodes.filter((n) => n.isNew).length;
 
   const renderDevLabel = (props: {
-    x?: number; y?: number; width?: number; value?: number;
+    x?: number | string; y?: number | string; width?: number | string; value?: number | string;
   }) => {
-    const { x = 0, y = 0, width = 0, value } = props;
-    if (value === undefined) return null;
+    const x = Number(props.x ?? 0);
+    const y = Number(props.y ?? 0);
+    const width = Number(props.width ?? 0);
+    const value = props.value !== undefined ? Number(props.value) : undefined;
+    if (value === undefined || isNaN(value)) return null;
     const color =
       Math.abs(value) > 10 ? "#dc2626" : Math.abs(value) > 5 ? "#d97706" : "#16a34a";
     return (
