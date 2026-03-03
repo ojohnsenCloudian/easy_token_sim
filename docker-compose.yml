@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/data
+    environment:
+      - DATA_DIR=/data
+      - DATABASE_URL=file:/data/db.sqlite
+      - NODE_ENV=production
+    restart: unless-stopped
