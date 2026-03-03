@@ -14,6 +14,9 @@ COPY webapp/ ./
 # Generate Prisma client
 RUN DATABASE_URL="file:/tmp/build.db" npx prisma generate
 
+# Create a clean empty database by running all migrations
+RUN DATABASE_URL="file:/tmp/initial.db" npx prisma migrate deploy
+
 # Build Next.js in standalone mode
 RUN DATABASE_URL="file:/tmp/build.db" npm run build
 
@@ -42,13 +45,12 @@ COPY --from=builder /build/.next/standalone /app/webapp/
 COPY --from=builder /build/.next/static     /app/webapp/.next/static
 COPY --from=builder /build/public           /app/webapp/public
 
-# Prisma generated client (query engine + JS client) + CLI for migrations
+# Prisma generated client (query engine + JS client)
 COPY --from=builder /build/node_modules/.prisma  /app/webapp/node_modules/.prisma
 COPY --from=builder /build/node_modules/@prisma  /app/webapp/node_modules/@prisma
-COPY --from=builder /build/node_modules/prisma   /app/webapp/node_modules/prisma
 
-# Prisma schema + migrations so `prisma migrate deploy` can run at startup
-COPY webapp/prisma /app/webapp/prisma
+# Pre-migrated empty database — copied to /data on first start
+COPY --from=builder /tmp/initial.db /app/initial.db
 
 COPY entrypoint.sh /app/webapp/entrypoint.sh
 RUN chmod +x /app/webapp/entrypoint.sh
