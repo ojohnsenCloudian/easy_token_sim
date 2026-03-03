@@ -43,6 +43,7 @@ import {
   ReferenceLine,
   Cell,
   ResponsiveContainer,
+  LabelList,
 } from "recharts";
 
 // Shorten a host name to a readable label for the chart X-axis
@@ -62,30 +63,38 @@ interface DcBalanceTooltipProps {
 function DcBalanceTooltip({ active, payload }: DcBalanceTooltipProps) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload;
+  const devColor =
+    Math.abs(d.deviationPct) > 10
+      ? "text-red-500"
+      : Math.abs(d.deviationPct) > 5
+      ? "text-amber-500"
+      : "text-emerald-500";
   return (
-    <div className="bg-background border rounded-lg shadow-lg p-3 text-xs space-y-1 min-w-[180px]">
-      <p className="font-semibold text-sm">{d.host}</p>
-      {d.isNew && (
-        <span className="inline-block bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-xs font-medium">
-          New node
-        </span>
-      )}
-      <div className="space-y-0.5 pt-1">
-        <div className="flex justify-between gap-4">
-          <span className="text-muted-foreground">Raw data ownership</span>
-          <span className="font-mono font-medium">{d.rawTB.toFixed(3)} TB</span>
+    <div className="bg-background/95 backdrop-blur border rounded-xl shadow-xl p-3.5 text-xs space-y-2 min-w-[200px]">
+      <div className="flex items-center gap-2">
+        <p className="font-semibold text-sm truncate">{d.host}</p>
+        {d.isNew && (
+          <span className="shrink-0 bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full text-[10px] font-semibold">
+            NEW
+          </span>
+        )}
+      </div>
+      <div className="border-t pt-2 space-y-1.5">
+        <div className="flex justify-between gap-6">
+          <span className="text-muted-foreground">Raw ownership</span>
+          <span className="font-mono font-semibold">{d.rawTB.toFixed(3)} TB</span>
         </div>
-        <div className="flex justify-between gap-4">
+        <div className="flex justify-between gap-6">
           <span className="text-muted-foreground">vNodes / tokens</span>
           <span className="font-mono">{d.tokens}</span>
         </div>
-        <div className="flex justify-between gap-4">
-          <span className="text-muted-foreground">Avg per vNode</span>
+        <div className="flex justify-between gap-6">
+          <span className="text-muted-foreground">Avg / vNode</span>
           <span className="font-mono">{d.avgPerVNode.toFixed(3)} TB</span>
         </div>
-        <div className="flex justify-between gap-4">
+        <div className="flex justify-between gap-6">
           <span className="text-muted-foreground">Deviation</span>
-          <span className={`font-mono ${Math.abs(d.deviationPct) > 5 ? "text-amber-600" : "text-green-600"}`}>
+          <span className={`font-mono font-semibold ${devColor}`}>
             {d.deviationPct > 0 ? "+" : ""}{d.deviationPct.toFixed(1)}%
           </span>
         </div>
@@ -94,25 +103,80 @@ function DcBalanceTooltip({ active, payload }: DcBalanceTooltipProps) {
   );
 }
 
+function getBarFill(deviationPct: number, isNew: boolean, dcId: string): string {
+  if (isNew) return `url(#g-blue-${dcId})`;
+  if (Math.abs(deviationPct) > 10) return `url(#g-red-${dcId})`;
+  if (Math.abs(deviationPct) > 5) return `url(#g-amber-${dcId})`;
+  return `url(#g-green-${dcId})`;
+}
+
+function GradientDefs({ id }: { id: string }) {
+  return (
+    <svg style={{ width: 0, height: 0, position: "absolute", overflow: "hidden" }} aria-hidden>
+      <defs>
+        <linearGradient id={`g-green-${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#4ade80" stopOpacity={0.95} />
+          <stop offset="100%" stopColor="#15803d" stopOpacity={0.85} />
+        </linearGradient>
+        <linearGradient id={`g-amber-${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#fbbf24" stopOpacity={0.95} />
+          <stop offset="100%" stopColor="#b45309" stopOpacity={0.85} />
+        </linearGradient>
+        <linearGradient id={`g-red-${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#f87171" stopOpacity={0.95} />
+          <stop offset="100%" stopColor="#b91c1c" stopOpacity={0.85} />
+        </linearGradient>
+        <linearGradient id={`g-blue-${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#60a5fa" stopOpacity={0.95} />
+          <stop offset="100%" stopColor="#1d4ed8" stopOpacity={0.85} />
+        </linearGradient>
+      </defs>
+    </svg>
+  );
+}
+
 function DcBalanceChart({ dc }: { dc: DcBalance }) {
+  const dcId = dc.dc.replace(/[^a-z0-9]/gi, "-");
+  const avg = dc.nodes.reduce((s, n) => s + n.rawTB, 0) / dc.nodes.length;
+
   const chartData = dc.nodes.map((n) => ({
     ...n,
     label: shortHost(n.host),
-    fill: n.isNew ? "#3b82f6" : "#94a3b8",
   }));
 
   const minTB = Math.min(...dc.nodes.map((n) => n.rawTB));
   const maxTB = Math.max(...dc.nodes.map((n) => n.rawTB));
   const range = maxTB - minTB;
-  // Give a little padding around the data
   const yMin = Math.max(0, minTB - range * 2 - 0.5);
-  const yMax = maxTB + range * 2 + 0.5;
+  const yMax = maxTB + range * 2 + 1.5;
 
   const newNodes = dc.nodes.filter((n) => n.isNew).length;
-  const existingNodes = dc.nodes.length - newNodes;
+
+  const renderDevLabel = (props: {
+    x?: number; y?: number; width?: number; value?: number;
+  }) => {
+    const { x = 0, y = 0, width = 0, value } = props;
+    if (value === undefined) return null;
+    const color =
+      Math.abs(value) > 10 ? "#dc2626" : Math.abs(value) > 5 ? "#d97706" : "#16a34a";
+    return (
+      <text
+        x={x + width / 2}
+        y={y - 5}
+        textAnchor="middle"
+        fontSize={9}
+        fill={color}
+        fontWeight={Math.abs(value) > 5 ? 700 : 400}
+      >
+        {value > 0 ? "+" : ""}{value.toFixed(1)}%
+      </text>
+    );
+  };
 
   return (
     <div className="space-y-4">
+      <GradientDefs id={dcId} />
+
       {/* DC header */}
       <div className="flex items-start justify-between flex-wrap gap-3">
         <div>
@@ -153,54 +217,71 @@ function DcBalanceChart({ dc }: { dc: DcBalance }) {
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
+        {newNodes > 0 && (
+          <div className="flex items-center gap-1.5">
+            <div className="w-3 h-3 rounded-sm bg-blue-500" />
+            <span>New nodes ({newNodes})</span>
+          </div>
+        )}
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-blue-500" />
-          <span>New nodes ({newNodes})</span>
+          <div className="w-3 h-3 rounded-sm bg-emerald-500" />
+          <span>Within ±5%</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-sm bg-slate-400" />
-          <span>Existing nodes ({existingNodes})</span>
+          <div className="w-3 h-3 rounded-sm bg-amber-400" />
+          <span>5–10% off</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-8 border-t-2 border-dashed border-orange-400" />
+          <div className="w-3 h-3 rounded-sm bg-red-400" />
+          <span>&gt;10% off</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-7 border-t-2 border-dashed border-orange-400" />
           <span>DC average</span>
         </div>
       </div>
 
       {/* Bar chart */}
-      <ResponsiveContainer width="100%" height={240}>
-        <BarChart data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 48 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-          <XAxis
-            dataKey="label"
-            tick={{ fontSize: 10, fill: "#6b7280" }}
-            angle={-35}
-            textAnchor="end"
-            interval={0}
-            height={56}
-          />
-          <YAxis
-            domain={[yMin, yMax]}
-            tick={{ fontSize: 10, fill: "#6b7280" }}
-            tickFormatter={(v: number) => `${v.toFixed(1)}`}
-            label={{ value: "Raw TB", angle: -90, position: "insideLeft", fontSize: 10, fill: "#6b7280", dx: -4 }}
-          />
-          <Tooltip content={<DcBalanceTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)" }} />
-          <ReferenceLine
-            y={dc.nodes.reduce((s, n) => s + n.rawTB, 0) / dc.nodes.length}
-            stroke="#f97316"
-            strokeDasharray="4 3"
-            strokeWidth={1.5}
-            label={{ value: "avg", fontSize: 9, fill: "#f97316", position: "right" }}
-          />
-          <Bar dataKey="rawTB" radius={[3, 3, 0, 0]} maxBarSize={48}>
-            {chartData.map((entry, i) => (
-              <Cell key={i} fill={entry.isNew ? "#3b82f6" : "#94a3b8"} />
-            ))}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <div className="rounded-xl bg-muted/20 border p-4">
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={chartData} margin={{ top: 22, right: 24, left: 8, bottom: 52 }} barCategoryGap="35%">
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.07)" />
+            <XAxis
+              dataKey="label"
+              tick={{ fontSize: 10, fill: "#6b7280" }}
+              angle={-35}
+              textAnchor="end"
+              interval={0}
+              height={56}
+              axisLine={{ stroke: "rgba(0,0,0,0.1)" }}
+              tickLine={false}
+            />
+            <YAxis
+              domain={[yMin, yMax]}
+              tick={{ fontSize: 10, fill: "#6b7280" }}
+              tickFormatter={(v: number) => `${v.toFixed(1)}`}
+              axisLine={false}
+              tickLine={false}
+              label={{ value: "Raw TB", angle: -90, position: "insideLeft", fontSize: 10, fill: "#9ca3af", dx: -4 }}
+            />
+            <Tooltip content={<DcBalanceTooltip />} cursor={{ fill: "rgba(0,0,0,0.04)", radius: 4 }} />
+            <ReferenceLine
+              y={avg}
+              stroke="#f97316"
+              strokeDasharray="5 3"
+              strokeWidth={2}
+              label={{ value: `avg ${avg.toFixed(2)} TB`, fontSize: 9, fill: "#f97316", position: "insideTopRight" }}
+            />
+            <Bar dataKey="rawTB" radius={[6, 6, 0, 0]} maxBarSize={56}>
+              <LabelList dataKey="deviationPct" content={renderDevLabel} />
+              {chartData.map((entry, i) => (
+                <Cell key={i} fill={getBarFill(entry.deviationPct, entry.isNew, dcId)} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
       {/* Node table */}
       <Table>
@@ -225,7 +306,7 @@ function DcBalanceChart({ dc }: { dc: DcBalance }) {
               <TableCell className="font-mono text-xs text-right py-1.5">{node.rawTB.toFixed(3)}</TableCell>
               <TableCell className="font-mono text-xs text-right py-1.5">{node.tokens}</TableCell>
               <TableCell className="font-mono text-xs text-right py-1.5">{node.avgPerVNode.toFixed(3)}</TableCell>
-              <TableCell className={`font-mono text-xs text-right py-1.5 ${Math.abs(node.deviationPct) > 10 ? "text-red-600 font-semibold" : Math.abs(node.deviationPct) > 5 ? "text-amber-600" : "text-green-600"}`}>
+              <TableCell className={`font-mono text-xs text-right py-1.5 font-medium ${Math.abs(node.deviationPct) > 10 ? "text-red-600" : Math.abs(node.deviationPct) > 5 ? "text-amber-600" : "text-emerald-600"}`}>
                 {node.deviationPct > 0 ? "+" : ""}{node.deviationPct.toFixed(1)}%
               </TableCell>
             </TableRow>

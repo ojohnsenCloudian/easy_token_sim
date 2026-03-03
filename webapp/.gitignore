@@ -4,4 +4,4 @@ tsconfig.tsbuildinfo
 dev.db
 db.sqlite
 *.db-journal
-customers/
+/customers/
