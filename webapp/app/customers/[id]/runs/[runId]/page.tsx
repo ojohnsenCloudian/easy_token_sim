@@ -277,7 +277,8 @@ function DcBalanceChart({ dc }: { dc: DcBalance }) {
               label={{ value: `avg ${avg.toFixed(2)} TB`, fontSize: 9, fill: "#f97316", position: "insideTopRight" }}
             />
             <Bar dataKey="rawTB" radius={[6, 6, 0, 0]} maxBarSize={56}>
-              <LabelList dataKey="deviationPct" content={renderDevLabel} />
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+              <LabelList dataKey="deviationPct" content={renderDevLabel as any} />
               {chartData.map((entry, i) => (
                 <Cell key={i} fill={getBarFill(entry.deviationPct, entry.isNew, dcId)} />
               ))}
