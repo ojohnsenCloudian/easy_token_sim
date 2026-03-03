@@ -32,6 +32,7 @@ import {
   TrendingUp,
   TrendingDown,
   FolderArchive,
+  AlertTriangle,
 } from "lucide-react";
 import {
   BarChart,
@@ -490,24 +491,47 @@ export default function ResultsPage() {
               const totalNodes = data.dcBalance.reduce((s, dc) => s + dc.nodes.length, 0);
               const newNodes = data.dcBalance.reduce((s, dc) => s + dc.nodes.filter((n) => n.isNew).length, 0);
               const allGood = data.dcBalance.every((dc) => dc.isGoodBalance);
+              const imbalancedDcs = data.dcBalance.filter((dc) => !dc.isGoodBalance);
               return (
-                <div className="flex flex-wrap items-center gap-2 text-sm">
-                  <span className="text-muted-foreground">{data.dcBalance.length} data center{data.dcBalance.length !== 1 ? "s" : ""}</span>
-                  <span className="text-muted-foreground/40">·</span>
-                  <span className="text-muted-foreground">{totalNodes} nodes total</span>
-                  <span className="text-muted-foreground/40">·</span>
-                  <span className="inline-flex items-center gap-1 font-medium text-blue-600">
-                    <TrendingUp className="w-3.5 h-3.5" />{newNodes} new
-                  </span>
-                  <span className="text-muted-foreground/40">·</span>
-                  {allGood ? (
-                    <span className="inline-flex items-center gap-1 font-medium text-emerald-600">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Good balance
+                <div className="space-y-3">
+                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                    <span className="text-muted-foreground">{data.dcBalance.length} data center{data.dcBalance.length !== 1 ? "s" : ""}</span>
+                    <span className="text-muted-foreground/40">·</span>
+                    <span className="text-muted-foreground">{totalNodes} nodes total</span>
+                    <span className="text-muted-foreground/40">·</span>
+                    <span className="inline-flex items-center gap-1 font-medium text-blue-600">
+                      <TrendingUp className="w-3.5 h-3.5" />{newNodes} new
                     </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 font-medium text-red-600">
-                      <XCircle className="w-3.5 h-3.5" /> Imbalanced — review DCs below
-                    </span>
+                    <span className="text-muted-foreground/40">·</span>
+                    {allGood ? (
+                      <span className="inline-flex items-center gap-1 font-medium text-emerald-600">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Good balance
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 font-medium text-red-600">
+                        <XCircle className="w-3.5 h-3.5" /> Imbalanced — review DCs below
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Alert banner when any DC exceeds the 10% deviation threshold */}
+                  {imbalancedDcs.length > 0 && (
+                    <div className="flex items-start gap-3 rounded-lg border border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
+                      <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                      <div className="space-y-1">
+                        <p className="font-semibold">Token distribution requires tuning</p>
+                        <p className="text-amber-800 dark:text-amber-300 text-xs leading-relaxed">
+                          {imbalancedDcs.map((dc) => (
+                            <span key={dc.dc} className="block">
+                              <span className="font-mono font-medium">{dc.dc}</span>
+                              {" — "}max deviation <span className="font-semibold">{dc.maxDeviationPct.toFixed(1)}%</span>
+                              {" "}exceeds the 10% threshold
+                              {dc.deviatingHostsCount > 0 && ` (${dc.deviatingHostsCount} host${dc.deviatingHostsCount !== 1 ? "s" : ""} affected)`}.
+                            </span>
+                          ))}
+                        </p>
+                      </div>
+                    </div>
                   )}
                 </div>
               );

@@ -123,7 +123,9 @@ function parseSimulationOutput(output: string): DcBalance[] {
     );
     const deviatingHostsCount = deviatingMatch ? parseInt(deviatingMatch[1], 10) : 0;
 
-    const isGoodBalance = /the simulation projects a good data balance/i.test(section);
+    // Use maxDeviationPct as the source of truth — the simulator text can say "good balance"
+    // even at e.g. 10.4% because it uses a strict > comparison internally.
+    const isGoodBalance = maxDeviationPct <= 10;
 
     results.push({
       dc: dcName,
