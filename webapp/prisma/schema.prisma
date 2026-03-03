@@ -1,0 +1,28 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-arm64-openssl-3.0.x", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id         String   @id @default(cuid())
+  name       String
+  folderName String   @unique
+  createdAt  DateTime @default(now())
+  runs       Run[]
+}
+
+model Run {
+  id          String    @id @default(cuid())
+  customerId  String
+  customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  status      String    @default("running")
+  output      String?
+  outputDir   String?
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+}

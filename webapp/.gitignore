@@ -1,0 +1,7 @@
+node_modules/
+.next/
+tsconfig.tsbuildinfo
+dev.db
+db.sqlite
+*.db-journal
+customers/

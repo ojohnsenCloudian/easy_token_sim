@@ -1,0 +1,28 @@
+---
+# Customer name — should match the folder name prefix
+customer_name: "your-customer-name"
+
+# These are relative filenames — they will be resolved to the customer folder automatically.
+# Place hsstool-ring.txt and hsstool-status.txt in the same folder as this file.
+hss_ring_output: "hsstool-ring.txt"
+hss_status_output: "hsstool-status.txt"
+
+# DC expansion configuration.
+# Format: "DC_NAME;num_nodes;node_capacity_TB;policy1,policy2[;RACK1:count,RACK2:count]"
+# Policies:
+#   RF only:  "3"           (RF3, all replicas in this DC)
+#   RF split: "3:2"         (RF3, 2 replicas in this DC)
+#   EC:       "7+5:4"       (EC 7+5, 4 fragments in this DC)
+#   EC full:  "4+2"         (EC 4+2, all fragments in this DC)
+dc_for_nodes:
+  - "dc01;5;133;3,7+5:4"
+  # - "dc02;3;133;3"
+
+# Region label
+region: "us_east"
+
+# Cumulative token mode (True/False)
+cumulative: "True"
+
+# Optional: set preferred token count per new node (uncomment to use)
+# preferred_token_number: 90

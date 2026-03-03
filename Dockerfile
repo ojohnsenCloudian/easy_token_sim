@@ -42,9 +42,17 @@ COPY --from=builder /build/.next/standalone /app/webapp/
 COPY --from=builder /build/.next/static     /app/webapp/.next/static
 COPY --from=builder /build/public           /app/webapp/public
 
-# Prisma generated client (query engine + JS client)
+# Prisma generated client (query engine + JS client) + CLI for migrations
 COPY --from=builder /build/node_modules/.prisma  /app/webapp/node_modules/.prisma
 COPY --from=builder /build/node_modules/@prisma  /app/webapp/node_modules/@prisma
+COPY --from=builder /build/node_modules/prisma   /app/webapp/node_modules/prisma
+COPY --from=builder /build/node_modules/.bin/prisma /app/webapp/node_modules/.bin/prisma
+
+# Prisma schema + migrations so `prisma migrate deploy` can run at startup
+COPY webapp/prisma /app/webapp/prisma
+
+COPY entrypoint.sh /app/webapp/entrypoint.sh
+RUN chmod +x /app/webapp/entrypoint.sh
 
 WORKDIR /app/webapp
 
@@ -56,4 +64,4 @@ ENV PORT=3000
 
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["/app/webapp/entrypoint.sh"]

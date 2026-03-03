@@ -1,0 +1,14 @@
+# Node / Next.js build artifacts
+webapp/node_modules/
+webapp/.next/
+webapp/tsconfig.tsbuildinfo
+
+# Prisma local dev databases
+webapp/dev.db
+webapp/db.sqlite
+webapp/*.db-journal
+
+# Runtime data (created by the app at runtime)
+data/db.sqlite
+data/db.sqlite-journal
+data/customers/
