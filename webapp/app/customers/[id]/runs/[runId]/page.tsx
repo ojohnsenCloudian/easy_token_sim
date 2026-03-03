@@ -407,32 +407,44 @@ export default function ResultsPage() {
         </div>
       </div>
 
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold">{data.tokenMap.length}</div>
-            <div className="text-xs text-muted-foreground mt-1">Token assignments</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold">{data.dcMap.length}</div>
-            <div className="text-xs text-muted-foreground mt-1">Data centers</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold">{data.hostnameMap.length}</div>
-            <div className="text-xs text-muted-foreground mt-1">Nodes mapped</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold">{data.outputFiles.length}</div>
-            <div className="text-xs text-muted-foreground mt-1">Output files</div>
-          </CardContent>
-        </Card>
+      {/* Summary strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border border rounded-xl overflow-hidden bg-card shadow-sm">
+        <div className="flex items-center gap-3 px-5 py-4">
+          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 shrink-0">
+            <Database className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-2xl font-bold leading-tight">{data.tokenMap.length.toLocaleString()}</div>
+            <div className="text-xs text-muted-foreground">Token assignments</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 px-5 py-4">
+          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-600 shrink-0">
+            <Network className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-2xl font-bold leading-tight">{data.dcMap.length}</div>
+            <div className="text-xs text-muted-foreground">Data centers</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 px-5 py-4">
+          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 shrink-0">
+            <Server className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-2xl font-bold leading-tight">{data.hostnameMap.length}</div>
+            <div className="text-xs text-muted-foreground">Nodes mapped</div>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 px-5 py-4">
+          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-orange-50 text-orange-500 shrink-0">
+            <FileDown className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="text-2xl font-bold leading-tight">{data.outputFiles.length}</div>
+            <div className="text-xs text-muted-foreground">Output files</div>
+          </div>
+        </div>
       </div>
 
       {/* Tabs */}
@@ -473,39 +485,33 @@ export default function ResultsPage() {
         {/* Balance Charts */}
         {data.dcBalance.length > 0 && (
           <TabsContent value="balance" className="mt-4 space-y-6">
-            {/* Overall summary */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Card>
-                <CardContent className="pt-4">
-                  <div className="text-2xl font-bold">{data.dcBalance.length}</div>
-                  <div className="text-xs text-muted-foreground mt-1">Data centers</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-4">
-                  <div className="text-2xl font-bold">
-                    {data.dcBalance.reduce((s, dc) => s + dc.nodes.length, 0)}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">Total nodes after expansion</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-4">
-                  <div className="text-2xl font-bold text-blue-600">
-                    {data.dcBalance.reduce((s, dc) => s + dc.nodes.filter((n) => n.isNew).length, 0)}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">New nodes added</div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-4">
-                  <div className={`text-2xl font-bold ${data.dcBalance.every((dc) => dc.isGoodBalance) ? "text-green-600" : "text-red-600"}`}>
-                    {data.dcBalance.every((dc) => dc.isGoodBalance) ? "Good" : "Check"}
-                  </div>
-                  <div className="text-xs text-muted-foreground mt-1">Overall balance</div>
-                </CardContent>
-              </Card>
-            </div>
+            {/* Compact expansion summary */}
+            {(() => {
+              const totalNodes = data.dcBalance.reduce((s, dc) => s + dc.nodes.length, 0);
+              const newNodes = data.dcBalance.reduce((s, dc) => s + dc.nodes.filter((n) => n.isNew).length, 0);
+              const allGood = data.dcBalance.every((dc) => dc.isGoodBalance);
+              return (
+                <div className="flex flex-wrap items-center gap-2 text-sm">
+                  <span className="text-muted-foreground">{data.dcBalance.length} data center{data.dcBalance.length !== 1 ? "s" : ""}</span>
+                  <span className="text-muted-foreground/40">·</span>
+                  <span className="text-muted-foreground">{totalNodes} nodes total</span>
+                  <span className="text-muted-foreground/40">·</span>
+                  <span className="inline-flex items-center gap-1 font-medium text-blue-600">
+                    <TrendingUp className="w-3.5 h-3.5" />{newNodes} new
+                  </span>
+                  <span className="text-muted-foreground/40">·</span>
+                  {allGood ? (
+                    <span className="inline-flex items-center gap-1 font-medium text-emerald-600">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Good balance
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 font-medium text-red-600">
+                      <XCircle className="w-3.5 h-3.5" /> Imbalanced — review DCs below
+                    </span>
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Per-DC charts */}
             {data.dcBalance.map((dc) => (
