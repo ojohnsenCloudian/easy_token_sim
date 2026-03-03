@@ -1,0 +1,48 @@
+#!/usr/bin/env /bin/bash
+
+# Copyright: (c) 2008-2014 Cloudian, Inc. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+# Use JAVA_HOME if set, otherwise look for java in PATH
+RUN_USER=cloudian
+if [ -x $JAVA_HOME/bin/java ]; then
+    JAVA=$JAVA_HOME/bin/java
+else
+    JAVA=`which java`
+fi
+
+pathsep=":"
+function append_jars_onto_classpath() {
+    local JARS
+    JARS=`find $1/*.jar 2> /dev/null || true`
+    for i in $JARS; do
+        if [ -n "$CLASSPATH" ]; then
+            CLASSPATH="$CLASSPATH${pathsep}${i}";
+        else
+            CLASSPATH=${i}
+        fi
+    done
+}
+
+function build_classpath() {
+  CLASSPATH="./conf";
+  append_jars_onto_classpath "./lib"
+  export CLASSPATH
+}
+
+build_classpath
+
+LOG_PATH="${LOG_FILE_PATH:-/data/logs/cloudian-token.log}"
+$JAVA -Xmx2g -Xmn400m -Dlog4j.configurationFile=log4j-token-gen.xml -Dlog.file.path="${LOG_PATH}" com.cloudian.token.TokenSimulation $@

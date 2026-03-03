@@ -1,0 +1,19 @@
+---
+ customer_name: "adp"
+ hss_ring_output: "/Users/vinodhsankaravadivel/Documents/customer/expansion_simulation/adp/hyperstore_hsstool-ring_out.txt"
+ hss_status_output: "/Users/vinodhsankaravadivel/Documents/customer/expansion_simulation/adp/hyperstore_hsstool-status_out.txt"
+ dc_for_nodes:
+  - "dc01;5;133;3,7+5:4,4+2:6;R7550201:2,R7550202:3" #(Dc_to_add;how_many_nodes;Capacity_of_1_Node[;Optional Policy information seperated by , if EC policy provide k+m:num_fragments_in_this_DC for replica just provide RF factor.];RAC1_TO_ADD:Number_Of_nodes,RAC2_TO_ADD:Number_Of_nodes
+ region: "us_east"
+ cumulative: "True"
+ #preferred_token_number: 90
+---
+ customer_name: "cmcmarkets"
+ hss_ring_output: "/Users/vinodhsankaravadivel/Documents/customer/expansion_simulation/cmc_markets/hyperstore_hsstool-ring_out.txt"
+ hss_status_output: "/Users/vinodhsankaravadivel/Documents/customer/expansion_simulation/cmc_markets/hyperstore_hsstool-status_out.txt"
+ dc_for_nodes:
+   - "UK2; 5; 133; 3,7+5:4" # which DC to add the data
+   - "UK3; 12;40;4,4+2:6"
+   - "UK6;12;80;2,3,6+2:8"
+ region: "us_east"
+ cumulative: "True"
