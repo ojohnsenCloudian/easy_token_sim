@@ -586,34 +586,68 @@ export default function ResultsPage() {
 
         {/* DC Map */}
         <TabsContent value="dc" className="mt-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Data Center Map</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {data.dcMap.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No DC map data available</p>
-              ) : (
-                <div className="space-y-4">
-                  {data.dcMap.map((dc) => (
-                    <div key={dc.dc} className="border rounded-lg p-4">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Badge variant="outline" className="font-mono">{dc.dc}</Badge>
-                        <span className="text-xs text-muted-foreground">{dc.nodes.length} nodes</span>
+          {data.dcMap.length === 0 ? (
+            <Card><CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground">No DC map data available</p>
+            </CardContent></Card>
+          ) : (
+            <div className="space-y-3">
+              {data.dcMap.map((dc, idx) => {
+                const isIp = (s: string) => /^\d+\.\d+\.\d+\.\d+$/.test(s);
+                const ips = dc.nodes.filter(isIp);
+                const hosts = dc.nodes.filter((n) => !isIp(n));
+                const accent = ["border-blue-400","border-violet-400","border-emerald-400","border-orange-400","border-rose-400"][idx % 5];
+                const iconBg = ["bg-blue-50 text-blue-600","bg-violet-50 text-violet-600","bg-emerald-50 text-emerald-600","bg-orange-50 text-orange-600","bg-rose-50 text-rose-600"][idx % 5];
+                return (
+                  <Card key={dc.dc} className={`border-l-4 ${accent}`}>
+                    <CardHeader className="pb-3 pt-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                          <div className={`flex items-center justify-center w-8 h-8 rounded-lg text-sm font-bold ${iconBg}`}>
+                            {idx + 1}
+                          </div>
+                          <div>
+                            <span className="font-semibold font-mono text-sm">{dc.dc}</span>
+                            <p className="text-xs text-muted-foreground mt-0.5">{dc.nodes.length} node{dc.nodes.length !== 1 ? "s" : ""}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-3 text-xs text-muted-foreground">
+                          {ips.length > 0 && <span>{ips.length} IP{ips.length !== 1 ? "s" : ""}</span>}
+                          {hosts.length > 0 && <span>{hosts.length} hostname{hosts.length !== 1 ? "s" : ""}</span>}
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-1.5">
-                        {dc.nodes.map((node, i) => (
-                          <code key={i} className="bg-muted px-2 py-0.5 rounded text-xs font-mono">
-                            {node}
-                          </code>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    </CardHeader>
+                    <CardContent className="pt-0 space-y-3">
+                      {ips.length > 0 && (
+                        <div>
+                          <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">IP Addresses</p>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5">
+                            {ips.map((ip, i) => (
+                              <code key={i} className="bg-muted/60 border border-border/60 px-2.5 py-1 rounded-md text-xs font-mono truncate">
+                                {ip}
+                              </code>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {hosts.length > 0 && (
+                        <div>
+                          <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground mb-1.5">Hostnames</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1.5">
+                            {hosts.map((h, i) => (
+                              <code key={i} className="bg-blue-50/60 border border-blue-100 text-blue-800 px-2.5 py-1 rounded-md text-xs font-mono truncate">
+                                {h}
+                              </code>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
         </TabsContent>
 
         {/* Hostname Map */}
