@@ -139,7 +139,7 @@ function MiniBarChart({ dc, prefix }: { dc: DcBalance; prefix: string }) {
             width={36}
           />
           <Tooltip
-            formatter={(v: number) => [`${v.toFixed(3)} TB`, "Raw TB"]}
+            formatter={(v: number | undefined) => [v != null ? `${v.toFixed(3)} TB` : "—", "Raw TB"]}
             contentStyle={{ fontSize: 11 }}
           />
           <ReferenceLine
