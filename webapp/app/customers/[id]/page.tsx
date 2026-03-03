@@ -30,6 +30,7 @@ import {
   ChevronRight,
   Trash2,
   MessageSquare,
+  GitCompare,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -403,9 +404,19 @@ export default function CustomerPage() {
 
       {/* Run history */}
       <div>
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-          Run History
-        </h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            Run History
+          </h3>
+          {customer.runs.filter((r) => r.status === "completed").length >= 2 && (
+            <Link href={`/customers/${id}/compare`}>
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                <GitCompare className="w-3.5 h-3.5" />
+                Compare Runs
+              </Button>
+            </Link>
+          )}
+        </div>
         {customer.runs.length === 0 ? (
           <p className="text-sm text-muted-foreground">No runs yet</p>
         ) : (
