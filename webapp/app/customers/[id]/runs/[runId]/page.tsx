@@ -409,44 +409,57 @@ export default function ResultsPage() {
       </div>
 
       {/* Summary strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border border rounded-xl overflow-hidden bg-card shadow-sm">
-        <div className="flex items-center gap-3 px-5 py-4">
-          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 shrink-0">
-            <Database className="w-4 h-4" />
+      {(() => {
+        // Count unique nodes that actually participated in the balance calculation.
+        // This excludes any nodes passed via the 'exclude' config field, since those
+        // are omitted from the simulator's balance output entirely.
+        const balanceNodeCount =
+          data.dcBalance.length > 0
+            ? new Set(data.dcBalance.flatMap((dc) => dc.nodes.map((n) => n.host))).size
+            : data.hostnameMap.length;
+        const balanceNodeLabel =
+          data.dcBalance.length > 0 ? "Nodes in simulation" : "Nodes mapped";
+        return (
+          <div className="grid grid-cols-2 sm:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border border rounded-xl overflow-hidden bg-card shadow-sm">
+            <div className="flex items-center gap-3 px-5 py-4">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 shrink-0">
+                <Database className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold leading-tight">{data.tokenMap.length.toLocaleString()}</div>
+                <div className="text-xs text-muted-foreground">Token assignments</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 px-5 py-4">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-600 shrink-0">
+                <Network className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold leading-tight">{data.dcMap.length}</div>
+                <div className="text-xs text-muted-foreground">Data centers</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 px-5 py-4">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 shrink-0">
+                <Server className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold leading-tight">{balanceNodeCount}</div>
+                <div className="text-xs text-muted-foreground">{balanceNodeLabel}</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 px-5 py-4">
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-orange-50 text-orange-500 shrink-0">
+                <FileDown className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="text-2xl font-bold leading-tight">{data.outputFiles.length}</div>
+                <div className="text-xs text-muted-foreground">Output files</div>
+              </div>
+            </div>
           </div>
-          <div>
-            <div className="text-2xl font-bold leading-tight">{data.tokenMap.length.toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground">Token assignments</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 px-5 py-4">
-          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50 text-blue-600 shrink-0">
-            <Network className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold leading-tight">{data.dcMap.length}</div>
-            <div className="text-xs text-muted-foreground">Data centers</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 px-5 py-4">
-          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 text-emerald-600 shrink-0">
-            <Server className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold leading-tight">{data.hostnameMap.length}</div>
-            <div className="text-xs text-muted-foreground">Nodes mapped</div>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 px-5 py-4">
-          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-orange-50 text-orange-500 shrink-0">
-            <FileDown className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="text-2xl font-bold leading-tight">{data.outputFiles.length}</div>
-            <div className="text-xs text-muted-foreground">Output files</div>
-          </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* Tabs */}
       <Tabs defaultValue={data.dcBalance.length > 0 ? "balance" : "terminal"}>
