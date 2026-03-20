@@ -547,6 +547,22 @@ export default function ConfigEditorPage() {
     setForm({ ...form, dcEntries: form.dcEntries.filter((_, idx) => idx !== i) });
   };
 
+  // Exclude helpers
+  const addExcluded = () => {
+    if (!form) return;
+    setForm({ ...form, excludedNodes: [...form.excludedNodes, ""] });
+  };
+  const updateExcluded = (i: number, value: string) => {
+    if (!form) return;
+    const excludedNodes = [...form.excludedNodes];
+    excludedNodes[i] = value;
+    setForm({ ...form, excludedNodes });
+  };
+  const removeExcluded = (i: number) => {
+    if (!form) return;
+    setForm({ ...form, excludedNodes: form.excludedNodes.filter((_, idx) => idx !== i) });
+  };
+
   // Node helpers
   const addNode = () => {
     if (!form) return;
@@ -929,6 +945,59 @@ export default function ConfigEditorPage() {
                 {form.nodesToAdd.length === 0 && (
                   <p className="text-sm text-muted-foreground italic py-4 text-center border rounded-lg">
                     No hostnames configured — the simulator will use auto-generated IPs.
+                  </p>
+                )}
+              </div>
+
+              <Separator />
+
+              {/* Excluded nodes */}
+              <div className="space-y-4">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-base font-semibold">
+                      Exclude Nodes from Balance Calculation
+                      <span className="ml-2 text-muted-foreground font-normal text-sm">
+                        optional
+                      </span>
+                    </h3>
+                    <p className="text-xs text-muted-foreground mt-0.5 max-w-xl">
+                      IPs or hostnames of existing nodes to exclude when computing balance
+                      statistics. Useful for nodes being decommissioned or known outliers.
+                    </p>
+                  </div>
+                  <Button variant="outline" size="sm" className="gap-1 shrink-0" onClick={addExcluded}>
+                    <Plus className="w-3.5 h-3.5" /> Add Node
+                  </Button>
+                </div>
+
+                {form.excludedNodes.length > 0 && (
+                  <Card>
+                    <div className="divide-y">
+                      {form.excludedNodes.map((node, i) => (
+                        <div key={i} className="flex items-center gap-3 px-4 py-2.5">
+                          <Input
+                            value={node}
+                            className="h-8 text-xs font-mono"
+                            placeholder="e.g. 192.168.1.10 or cloudian-node05"
+                            onChange={(e) => updateExcluded(i, e.target.value)}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 shrink-0 text-muted-foreground hover:text-destructive"
+                            onClick={() => removeExcluded(i)}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
+                )}
+                {form.excludedNodes.length === 0 && (
+                  <p className="text-sm text-muted-foreground italic py-4 text-center border rounded-lg">
+                    No nodes excluded — all existing nodes are included in balance calculations.
                   </p>
                 )}
               </div>

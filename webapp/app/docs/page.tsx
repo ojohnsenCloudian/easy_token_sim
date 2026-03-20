@@ -394,7 +394,10 @@ nodes_to_add:
   - "10.0.0.101:dc1:rack1"
   - "10.0.0.102:dc1:rack1"
   - "10.0.0.201:dc2:rack1"
-  - "10.0.0.202:dc2:rack1"`}</YamlBlock>
+  - "10.0.0.202:dc2:rack1"
+
+# Optional: exclude these nodes from balance statistics (comma-separated)
+exclude: "192.168.1.99,192.168.1.100"`}</YamlBlock>
 
         <SubHeading>Fields</SubHeading>
         <div className="border rounded-lg overflow-hidden mt-2">
@@ -415,6 +418,7 @@ nodes_to_add:
               <PropRow name="cumulative" type='"True" | "False"'>Cumulative token mode. Leave as <Code>True</Code> for standard expansions.</PropRow>
               <PropRow name="preferred_token_number" type="integer">Preferred vNode count per new node. If omitted the simulator calculates it automatically.</PropRow>
               <PropRow name="nodes_to_add" type="string[]">Real hostnames or IPs for new nodes, used in output reports. Optional.</PropRow>
+              <PropRow name="exclude" type="string">Comma-separated IPs or hostnames of existing nodes to exclude from balance calculations. Useful for decommissioning nodes or known outliers. Optional.</PropRow>
             </tbody>
           </table>
         </div>

@@ -54,6 +54,8 @@ export interface ConfigFormData {
   preferredTokenNumber?: number;
   dcEntries: DcEntry[];
   nodesToAdd: NodeToAdd[];
+  /** Nodes to exclude from balance calculations (IPs or hostnames) */
+  excludedNodes: string[];
 }
 
 // ─── Policy serialization ─────────────────────────────────────────────────────
@@ -165,6 +167,10 @@ export function formToYaml(data: ConfigFormData): string {
   if (data.preferredTokenNumber && data.preferredTokenNumber > 0) {
     obj.preferred_token_number = data.preferredTokenNumber;
   }
+  const validExcludes = data.excludedNodes.map((n) => n.trim()).filter(Boolean);
+  if (validExcludes.length > 0) {
+    obj.exclude = validExcludes.join(",");
+  }
   return "---\n" + yaml.dump(obj, { lineWidth: 120, quotingType: '"' });
 }
 
@@ -177,6 +183,11 @@ export function yamlToForm(content: string): ConfigFormData | null {
     const dcForNodes = (doc.dc_for_nodes as string[] | undefined) ?? [];
     const rawNodes = (doc.nodes_to_add as string[] | undefined) ?? [];
 
+    const rawExclude = (doc.exclude as string | undefined) ?? "";
+    const excludedNodes = rawExclude
+      ? rawExclude.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+
     return {
       customerName: (doc.customer_name as string) ?? "",
       region: (doc.region as string) ?? "us_east",
@@ -187,6 +198,7 @@ export function yamlToForm(content: string): ConfigFormData | null {
           : undefined,
       dcEntries: dcForNodes.map((s) => parseDcEntry(String(s))),
       nodesToAdd: rawNodes.map((s) => parseNodeToAdd(String(s))),
+      excludedNodes,
     };
   } catch {
     return null;
@@ -208,6 +220,7 @@ export function emptyConfig(customerName: string): ConfigFormData {
       },
     ],
     nodesToAdd: [],
+    excludedNodes: [],
   };
 }
 

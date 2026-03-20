@@ -105,6 +105,19 @@ function fixAndValidateConfig(content: string): {
     }
   }
 
+  // ── Validate exclude ──────────────────────────────────────────────────────
+  if (doc.exclude !== undefined) {
+    if (typeof doc.exclude !== "string") {
+      warnings.push(
+        '"exclude" must be a comma-separated string of IPs/hostnames — e.g. "192.168.1.1,192.168.1.2"'
+      );
+    } else if (doc.exclude.trim() === "") {
+      // Empty string — remove it to keep the YAML clean
+      delete doc.exclude;
+      changed = true;
+    }
+  }
+
   const resultContent = changed
     ? "---\n" + yaml.dump(doc, { lineWidth: 120, quotingType: '"' })
     : content;
